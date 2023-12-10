@@ -18,6 +18,28 @@ const FormSchema = z.object({
 const CreateInvoice = FormSchema.omit({id: true, date: true});
 const UpdateInvoice = FormSchema.omit({id: true, date: true});
 
+export async function createCustomer(formData: FormData) {
+  const {email, name} = z
+    .object({
+      name: z.string(),
+      email: z.string(),
+    })
+    .parse({
+      name: formData.get('customer'),
+      email: formData.get('email'),
+    });
+
+  const image_url = '/customers/no-avatar.png';
+
+  await sql`
+    INSERT INTO customers (name, email, image_url)
+    VALUES (${name}, ${email}, ${image_url})
+  `;
+
+  revalidatePath('/dashboard/customers');
+  redirect('/dashboard/customers');
+}
+
 export async function createInvoice(formData: FormData) {
   const {customerId, amount, status} = CreateInvoice.parse({
     customerId: formData.get('customerId'),
